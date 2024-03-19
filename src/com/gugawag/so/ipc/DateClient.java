@@ -11,21 +11,27 @@ package com.gugawag.so.ipc;
 
 import java.net.*;
 import java.io.*;
+import java.util.Scanner;
 
 public class DateClient {
 	public static void main(String[] args)  {
 		try {
 			// this could be changed to an IP name or address other than the localhost
 			Socket sock = new Socket("localhost",6013);
-			InputStream in = sock.getInputStream();
-			BufferedReader bin = new BufferedReader(new InputStreamReader(in));
-
+			DataOutputStream dos = new DataOutputStream(sock.getOutputStream());
+			DataInputStream dis = new DataInputStream(sock.getInputStream());
 			System.out.println("=== Cliente iniciado ===\n");
 
-			String line = bin.readLine();
-			System.out.println("O servidor me disse:" + line);
-				
-			sock.close();
+			while (true){
+				System.out.print(">> ");
+
+				Scanner teclado = new Scanner(System.in);
+
+				dos.writeUTF(teclado.nextLine());
+
+				String line = dis.readUTF();
+				System.out.println("O servidor me disse:" + line);
+			}
 		}
 		catch (IOException ioe) {
 				System.err.println(ioe);

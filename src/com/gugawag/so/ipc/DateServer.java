@@ -14,33 +14,36 @@ import java.io.*;
 import java.util.Date;
 
 public class DateServer{
-	public static void main(String[] args)  {
-		try {
-			ServerSocket sock = new ServerSocket(6013);
+	public static void main(String[] args) throws IOException{
 
-			System.out.println("=== Servidor iniciado ===\n");
-			// escutando por conexões
-			while (true) {
-				Socket client = sock.accept();
-				// Se chegou aqui, foi porque algum cliente se comunicou
-				System.out.println("Servidor recebeu comunicação do ip: " + client.getInetAddress() + "-" + client.getPort());
-				PrintWriter pout = new PrintWriter(client.getOutputStream(), true);
+		ServerSocket sock = new ServerSocket(6013);
 
-				// Escreve a data atual no socket
-				pout.println(new Date().toString() + "-Boa noite alunos!");
+		System.out.println("=== Servidor iniciado ===\n");
+		// escutando por conexões
+		while (true) {
+			Socket client = sock.accept();
+			DataOutputStream dos = new DataOutputStream(client.getOutputStream());
+			DataInputStream dis = new DataInputStream(client.getInputStream());
 
-				InputStream in = client.getInputStream();
-				BufferedReader bin = new BufferedReader(new InputStreamReader(in));
+			new Thread(()-> {
+				while (true) {
+					try {
+						// Se chegou aqui, foi porque algum cliente se comunicou
+						System.out.println("Servidor recebeu comunicação do ip: " + client.getInetAddress() + "-" + client.getPort() + "\n");
+						String mensagem = dis.readUTF();
 
-				String line = bin.readLine();
-				System.out.println("O cliente me disse:" + line);
+						// Escreve a data atual no socket
+						dos.writeUTF(new Date().toString() + "-Boa noite alunos!");
 
-				// fechar o socket e volta no loop para escutar novas conexões
-				client.close();
-			}
-		}
-		catch (IOException ioe) {
-				System.err.println(ioe);
+						System.out.println("O cliente me disse:" + mensagem + "\n");
+
+						// fechar o socket e volta no loop para escutar novas conexões
+						//client.close();
+					} catch (IOException e) {
+						throw new RuntimeException(e);
+					}
+				}
+			}).start();
 		}
 	}
 }
